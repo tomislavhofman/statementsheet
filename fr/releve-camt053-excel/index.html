@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ouvrir un relevé camt.053 et le convertir en Excel | StatementSheet</title>
+<meta name="description" content="Ouvrez un relevé bancaire camt.053 (XML) et convertissez-le en Excel ou CSV : une ligne par opération avec date, montant, contrepartie, IBAN et communication. Dans le navigateur, sans envoi.">
+<link rel="canonical" href="https://hofman.tech/statementsheet/fr/releve-camt053-excel/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ouvrir un relevé camt.053 et le convertir en Excel | StatementSheet">
+<meta property="og:description" content="Ouvrez un relevé bancaire camt.053 (XML) et convertissez-le en Excel ou CSV : une ligne par opération avec date, montant, contrepartie, IBAN et communication. Dans le navigateur, sans envoi.">
+<meta property="og:url" content="https://hofman.tech/statementsheet/fr/releve-camt053-excel/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%231d4f91%22%2F%3E%3Cpath%20d%3D%22M8%209h16M8%2014h10M8%2019h16M8%2024h8%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<link rel="stylesheet" href="/statementsheet/assets/style.css?v=0bef728c">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Les références QR sont-elles reprises ?","acceptedAnswer":{"@type":"Answer","text":"Oui. La référence structurée (référence QR ou RF) figure dans sa propre colonne."}},{"@type":"Question","name":"Puis-je combiner plusieurs comptes ?","acceptedAnswer":{"@type":"Answer","text":"Oui. Déposez des fichiers de plusieurs comptes et banques ; chaque ligne indique son compte."}},{"@type":"Question","name":"Pourquoi certains montants sont-ils négatifs ?","acceptedAnswer":{"@type":"Answer","text":"Les débits (DBIT) sont exportés en négatif, afin que la somme de la colonne donne le mouvement net."}},{"@type":"Question","name":"Le format MT940 est-il aussi pris en charge ?","acceptedAnswer":{"@type":"Answer","text":"Oui, y compris les fichiers .sta et .txt."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"StatementSheet","item":"https://hofman.tech/statementsheet/fr/"},{"@type":"ListItem","position":2,"name":"Relevé camt.053 en Excel","item":"https://hofman.tech/statementsheet/fr/releve-camt053-excel/"}]}</script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="dec793c0-5ade-448a-acfb-2c015b441f1d" data-domains="hofman.tech"></script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="/statementsheet/fr/">Statement<span>Sheet</span></a>
+  <nav class="langs" aria-label="Language"><a href="/statementsheet/" hreflang="en">English</a><a href="/statementsheet/de/" hreflang="de">Deutsch</a><a href="/statementsheet/nl/" hreflang="nl">Nederlands</a><a href="/statementsheet/fr/" hreflang="fr" aria-current="true">Français</a></nav>
+</div></header>
+<main>
+<div class="wrap">
+  <section class="hero">
+    <p class="crumbs small"><a href="/statementsheet/fr/">StatementSheet</a> › Guides</p>
+    <h1>Ouvrir un relevé camt.053 et le convertir en Excel</h1>
+    <p>Un fichier camt.053 est votre relevé bancaire au format XML ISO 20022. Déposez-le ici : toutes les opérations s’affichent dans un tableau que vous téléchargez en Excel ou CSV.</p>
+  </section>
+  <p class="try small muted">Essayez avec votre fichier:</p>
+  <div id="ss-drop" class="drop" role="button" tabindex="0" aria-describedby="ss-drop-hint">
+    <strong>Déposez vos relevés ici</strong>
+    <span id="ss-drop-hint" class="muted">ou cliquez pour choisir : .xml (camt), .sta / .txt / .940 (MT940), .zip</span>
+    <input id="ss-file" type="file" multiple accept=".xml,.camt,.053,.052,.054,.sta,.mt940,.940,.942,.txt,.dat,.zip,application/xml,text/xml,text/plain,application/zip">
+  </div>
+  <p id="ss-drop-status" class="muted small" aria-live="polite"></p>
+  <p id="ss-gate-note" class="muted small"></p>
+
+  <section id="ss-results" class="results" hidden>
+    <div class="toolbar">
+      <strong id="ss-count"></strong>
+      <span class="spacer"></span>
+      <button id="ss-xlsx" class="btn primary" type="button">Télécharger Excel</button>
+      <button id="ss-csv" class="btn" type="button">CSV : opérations</button>
+      <button id="ss-clear" class="btn" type="button">Effacer</button>
+    </div>
+    <h3>Relevés</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Compte</th><th>Période</th><th class="num">Début</th><th class="num">Crédits</th><th class="num">Débits</th><th class="num">Fin</th><th class="num">Op.</th><th>Format</th></tr></thead>
+        <tbody id="ss-stmt-body"></tbody>
+      </table>
+    </div>
+    <h3>Opérations</h3>
+    <input id="ss-search" class="search" type="search" placeholder="Rechercher une opération…" aria-label="Rechercher une opération…" autocomplete="off">
+    <div class="table-scroll">
+      <table id="ss-tx">
+        <thead><tr><th>Date</th><th class="num">Montant</th><th>Contrepartie</th><th>Libellé</th><th>Compte</th></tr></thead>
+        <tbody id="ss-tx-body"></tbody>
+        <tfoot id="ss-tx-foot"></tfoot>
+      </table>
+    </div>
+    <p id="ss-showing" class="muted small"></p>
+    <ul id="ss-errors" hidden></ul>
+  </section>
+</div>
+
+<section class="block"><div class="wrap prose">
+<h2>Qu’est-ce qu’un fichier camt.053 ?</h2>
+<p>camt.053 est le format XML ISO 20022 utilisé par les banques pour les relevés de compte quotidiens, notamment en Suisse. Il remplace progressivement l’ancien format MT940. Les fichiers camt.052 (relevé intrajournalier) et camt.054 (avis de crédit, par exemple pour les paiements QR) ont la même structure.</p>
+<p>Ouvert dans un navigateur ou importé tel quel dans Excel, le fichier n’affiche que du XML imbriqué au lieu d’une liste d’opérations.</p>
+
+<h2>Comment convertir un relevé camt.053 en Excel</h2>
+<ol>
+  <li>Dans votre e-banking, téléchargez les relevés au format camt.053 (parfois « ISO 20022 » ou « XML »). Un ZIP de plusieurs jours fonctionne aussi.</li>
+  <li>Déposez les fichiers ci-dessus. Chaque relevé apparaît avec son solde initial et final, et toutes les opérations dans un tableau par date.</li>
+  <li>Cliquez sur « Télécharger Excel » pour obtenir les feuilles Opérations et Relevés, ou sur « CSV : opérations ».</li>
+</ol>
+
+<h2>D’où vient chaque colonne</h2>
+<div class="table-scroll"><table class="ref">
+<thead><tr><th>Élément camt.053</th><th>Colonne exportée</th></tr></thead>
+<tbody><tr><td class="mono">Ntry/BookgDt</td><td>Date de comptabilisation</td></tr><tr><td class="mono">Ntry/ValDt</td><td>Date de valeur</td></tr><tr><td class="mono">Ntry/Amt + CdtDbtInd</td><td>Montant (négatif si DBIT)</td></tr><tr><td class="mono">TxDtls/RltdPties/Dbtr ou Cdtr</td><td>Contrepartie (payeur pour un crédit, bénéficiaire pour un débit)</td></tr><tr><td class="mono">TxDtls/RltdPties/DbtrAcct ou CdtrAcct</td><td>IBAN de la contrepartie</td></tr><tr><td class="mono">TxDtls/RmtInf/Ustrd</td><td>Communication</td></tr><tr><td class="mono">TxDtls/RmtInf/Strd/CdtrRefInf/Ref</td><td>Référence structurée (QR, RF)</td></tr><tr><td class="mono">TxDtls/Refs/EndToEndId</td><td>Référence de bout en bout</td></tr><tr><td class="mono">TxDtls/Refs/MndtId</td><td>Référence de mandat</td></tr><tr><td class="mono">BkTxCd</td><td>Code opération</td></tr><tr><td class="mono">Ntry/AddtlNtryInf</td><td>Informations complémentaires</td></tr><tr><td class="mono">Stmt/Bal (OPBD, CLBD)</td><td>Solde initial et final</td></tr></tbody>
+</table></div>
+<p>Les écritures groupées (par exemple plusieurs paiements QR comptabilisés en une seule ligne) sont détaillées opération par opération lorsque la banque fournit le montant de chacune.</p>
+
+<h2>Contrôle des soldes</h2>
+<p>Pour chaque relevé, l’outil vérifie que solde initial + opérations = solde final, et signale le relevé avec ⚠ si ce n’est pas le cas.</p>
+
+<h2>Aucun envoi</h2>
+<p>Vos relevés restent sur votre ordinateur : ils sont lus dans le navigateur et ne sont envoyés nulle part.</p>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <h2>Questions</h2>
+  <details><summary>Les références QR sont-elles reprises ?</summary><p>Oui. La référence structurée (référence QR ou RF) figure dans sa propre colonne.</p></details>
+  <details><summary>Puis-je combiner plusieurs comptes ?</summary><p>Oui. Déposez des fichiers de plusieurs comptes et banques ; chaque ligne indique son compte.</p></details>
+  <details><summary>Pourquoi certains montants sont-ils négatifs ?</summary><p>Les débits (DBIT) sont exportés en négatif, afin que la somme de la colonne donne le mouvement net.</p></details>
+  <details><summary>Le format MT940 est-il aussi pris en charge ?</summary><p>Oui, y compris les fichiers .sta et .txt.</p></details>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <h2>Guides</h2>
+  <ul class="guides"><li><a href="/statementsheet/fr/releve-camt053-excel/" hreflang="fr">Relevé camt.053 en Excel</a></li><li><a href="/statementsheet/camt053-to-excel/" hreflang="en">camt.053 to Excel / CSV</a> <span class="muted small">(English)</span></li><li><a href="/statementsheet/mt940-to-excel/" hreflang="en">MT940 to Excel / CSV</a> <span class="muted small">(English)</span></li><li><a href="/statementsheet/de/camt053-in-excel/" hreflang="de">CAMT.053 in Excel umwandeln</a> <span class="muted small">(Deutsch)</span></li><li><a href="/statementsheet/de/mt940-sta-datei-oeffnen/" hreflang="de">MT940- bzw. STA-Datei öffnen</a> <span class="muted small">(Deutsch)</span></li><li><a href="/statementsheet/de/camt054-sammelbuchung-aufloesen/" hreflang="de">CAMT.054: Sammelbuchung auflösen</a> <span class="muted small">(Deutsch)</span></li><li><a href="/statementsheet/nl/camt053-naar-excel/" hreflang="nl">camt.053 naar Excel</a> <span class="muted small">(Nederlands)</span></li></ul>
+</div></section>
+</main>
+<footer class="site"><div class="wrap">
+  <span>Conçu en Croatie par Tomislav Hofman · <a href="https://hofman.tech/">hofman.tech</a> · <a href="https://hofman.tech/invoicesheet/">InvoiceSheet</a></span>
+  <span><a href="/statementsheet/privacy.html">Confidentialité</a> · <a href="/statementsheet/terms.html">Conditions et remboursement</a> · <a href="mailto:contact@hofman.tech">Contact</a></span>
+</div></footer>
+
+<dialog id="ss-paywall" aria-labelledby="ss-pw-title">
+  <div class="dialog-body">
+    <h2 id="ss-pw-title" style="margin-top:0">Exporter <span id="ss-paywall-count"></span> fichiers avec Pro</h2>
+    <p>La version gratuite exporte jusqu’à 3 fichiers de relevés à la fois. Pro supprime la limite pour 19 € une seule fois, sans abonnement, remboursable 14 jours.</p>
+    <p><a id="ss-buy" class="btn primary" href="#" target="_blank" rel="noopener">Acheter Pro, 19 €</a></p>
+    <p class="small">Déjà acheté ? Collez votre clé de licence :</p>
+    <form id="ss-key-form"><input id="ss-key" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX-…" aria-label="Licence key"><button class="btn" type="submit">Activer</button></form>
+    <p id="ss-key-msg" class="small" aria-live="polite"></p>
+    <p style="text-align:right;margin-bottom:0"><button class="btn" type="button" data-close>Fermer</button></p>
+  </div>
+</dialog>
+
+<script>window.SS_CONFIG={"polarOrgId":"","checkoutUrl":"","freeLimit":3};window.SS_I18N={"parsing":"Lecture des fichiers…","err_not_statement":"pas un relevé bancaire (XML camt.052/053/054 ou MT940 attendu)","err_read":"illisible","n_summary":"{s} relevés · {n} opérations","warn_balance":"solde initial + opérations ≠ solde final","launch_free":"Période de lancement : l’export est gratuit pour tous.","free_limit":"Gratuit : export de {n} fichiers maximum à la fois. Pro débloque les exports illimités.","pro_active":"Pro est actif dans ce navigateur. Merci !","key_ok":"Licence activée.","key_bad":"Cette clé de licence n’a pas été reconnue.","key_offline":"Serveur de licences injoignable. Réessayez dans un instant.","sheet_tx":"Opérations","sheet_stmt":"Relevés","col_file":"Fichier","col_format":"Format","col_account":"Compte","col_owner":"Titulaire","col_currency":"Devise","col_stmt":"N° de relevé","col_from":"Du","col_to":"Au","col_opening":"Solde initial","col_closing":"Solde final","col_credits":"Crédits","col_debits":"Débits","col_count":"Opérations","col_check":"Contrôle","col_booking":"Date de comptabilisation","col_value":"Date de valeur","col_amount":"Montant","col_dc":"Crédit/Débit","col_counterparty":"Contrepartie","col_cp_account":"Compte de la contrepartie","col_cp_bic":"BIC de la contrepartie","col_ultimate":"Partie finale","col_remittance":"Communication","col_reference":"Référence structurée","col_e2e":"Référence de bout en bout","col_mandate":"Référence de mandat","col_creditor":"ICS créancier","col_bankcode":"Code opération","col_info":"Informations complémentaires","col_bankref":"Référence bancaire","col_status":"Statut","col_description":"Libellé","credit":"Crédit","debit":"Débit","reversal":"Contre-passation","pending":"en attente","search_ph":"Rechercher une opération…","showing":"{shown} opérations affichées sur {n}. L’export les contient toutes.","totals":"Total"};</script>
+<script src="/statementsheet/assets/parser.js?v=5b50ec9c"></script>
+<script src="/statementsheet/assets/app.js?v=35b006e8"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAMT.053 in Excel umwandeln: Kontoauszug XML öffnen | StatementSheet</title>
+<meta name="description" content="CAMT.053-Kontoauszüge (XML) in Excel oder CSV umwandeln: eine Zeile pro Umsatz mit Buchungstag, Betrag, Auftraggeber, IBAN und Verwendungszweck. Viele Dateien auf einmal, im Browser, ohne Upload.">
+<link rel="canonical" href="https://hofman.tech/statementsheet/de/camt053-in-excel/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="CAMT.053 in Excel umwandeln: Kontoauszug XML öffnen | StatementSheet">
+<meta property="og:description" content="CAMT.053-Kontoauszüge (XML) in Excel oder CSV umwandeln: eine Zeile pro Umsatz mit Buchungstag, Betrag, Auftraggeber, IBAN und Verwendungszweck. Viele Dateien auf einmal, im Browser, ohne Upload.">
+<meta property="og:url" content="https://hofman.tech/statementsheet/de/camt053-in-excel/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%231d4f91%22%2F%3E%3Cpath%20d%3D%22M8%209h16M8%2014h10M8%2019h16M8%2024h8%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<link rel="stylesheet" href="/statementsheet/assets/style.css?v=0bef728c">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Welche CAMT-Versionen werden unterstützt?","acceptedAnswer":{"@type":"Answer","text":"CAMT.053, CAMT.052 und CAMT.054 in allen Versionen von .001.01 bis .001.13."}},{"@type":"Question","name":"Kann ich mehrere Konten zusammenführen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Dateien verschiedener Konten und Banken einfach zusammen ablegen; jede Zeile enthält ihr Konto."}},{"@type":"Question","name":"Warum sind manche Beträge negativ?","acceptedAnswer":{"@type":"Answer","text":"Lastschriften und Überweisungen vom Konto (Soll, DBIT) werden negativ exportiert, damit die Summe einer Spalte die Kontobewegung ergibt."}},{"@type":"Question","name":"Geht das auch mit MT940?","acceptedAnswer":{"@type":"Answer","text":"Ja, siehe die Anleitung zu MT940- bzw. STA-Dateien."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"StatementSheet","item":"https://hofman.tech/statementsheet/de/"},{"@type":"ListItem","position":2,"name":"CAMT.053 in Excel umwandeln","item":"https://hofman.tech/statementsheet/de/camt053-in-excel/"}]}</script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="dec793c0-5ade-448a-acfb-2c015b441f1d" data-domains="hofman.tech"></script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="/statementsheet/de/">Statement<span>Sheet</span></a>
+  <nav class="langs" aria-label="Language"><a href="/statementsheet/" hreflang="en">English</a><a href="/statementsheet/de/" hreflang="de" aria-current="true">Deutsch</a><a href="/statementsheet/nl/" hreflang="nl">Nederlands</a><a href="/statementsheet/fr/" hreflang="fr">Français</a></nav>
+</div></header>
+<main>
+<div class="wrap">
+  <section class="hero">
+    <p class="crumbs small"><a href="/statementsheet/de/">StatementSheet</a> › Anleitungen</p>
+    <h1>CAMT.053-Kontoauszug in Excel umwandeln</h1>
+    <p>Eine CAMT.053-Datei ist Ihr Kontoauszug als XML nach ISO 20022. Ziehen Sie sie hier hinein, und alle Umsätze landen in einer Tabelle, die Sie als Excel oder CSV herunterladen.</p>
+  </section>
+  <p class="try small muted">Mit Ihrer Datei ausprobieren:</p>
+  <div id="ss-drop" class="drop" role="button" tabindex="0" aria-describedby="ss-drop-hint">
+    <strong>Kontoauszüge hier ablegen</strong>
+    <span id="ss-drop-hint" class="muted">oder klicken und auswählen: .xml (CAMT), .sta / .txt / .940 (MT940), .zip</span>
+    <input id="ss-file" type="file" multiple accept=".xml,.camt,.053,.052,.054,.sta,.mt940,.940,.942,.txt,.dat,.zip,application/xml,text/xml,text/plain,application/zip">
+  </div>
+  <p id="ss-drop-status" class="muted small" aria-live="polite"></p>
+  <p id="ss-gate-note" class="muted small"></p>
+
+  <section id="ss-results" class="results" hidden>
+    <div class="toolbar">
+      <strong id="ss-count"></strong>
+      <span class="spacer"></span>
+      <button id="ss-xlsx" class="btn primary" type="button">Excel herunterladen</button>
+      <button id="ss-csv" class="btn" type="button">CSV: Umsätze</button>
+      <button id="ss-clear" class="btn" type="button">Leeren</button>
+    </div>
+    <h3>Kontoauszüge</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Konto</th><th>Zeitraum</th><th class="num">Anfang</th><th class="num">Eingänge</th><th class="num">Ausgänge</th><th class="num">Ende</th><th class="num">Umsätze</th><th>Format</th></tr></thead>
+        <tbody id="ss-stmt-body"></tbody>
+      </table>
+    </div>
+    <h3>Umsätze</h3>
+    <input id="ss-search" class="search" type="search" placeholder="Umsätze durchsuchen…" aria-label="Umsätze durchsuchen…" autocomplete="off">
+    <div class="table-scroll">
+      <table id="ss-tx">
+        <thead><tr><th>Datum</th><th class="num">Betrag</th><th>Auftraggeber / Empfänger</th><th>Verwendungszweck</th><th>Konto</th></tr></thead>
+        <tbody id="ss-tx-body"></tbody>
+        <tfoot id="ss-tx-foot"></tfoot>
+      </table>
+    </div>
+    <p id="ss-showing" class="muted small"></p>
+    <ul id="ss-errors" hidden></ul>
+  </section>
+</div>
+
+<section class="block"><div class="wrap prose">
+<h2>Was ist eine CAMT.053-Datei?</h2>
+<p>CAMT.053 ist das XML-Format nach ISO 20022, in dem Banken Tageskontoauszüge bereitstellen. Es löst nach und nach das ältere MT940-Format ab. Daneben gibt es CAMT.052 (untertägige Umsätze) und CAMT.054 (Einzelavise, etwa für Sammelbuchungen) mit derselben Struktur.</p>
+<p>Die Datei ist für Buchhaltungssoftware gedacht. Öffnet man sie im Browser oder per XML-Import in Excel, sieht man verschachtelte Elemente statt einer Umsatzliste.</p>
+
+<h2>So wandeln Sie CAMT.053 in Excel um</h2>
+<ol>
+  <li>Im Online-Banking die Kontoauszüge als CAMT.053 (oft „CAMT“, „ISO 20022“ oder „XML-Kontoauszug“) herunterladen. Ein ZIP mit mehreren Tagen geht auch.</li>
+  <li>Dateien oben ablegen. Jeder Auszug erscheint mit Anfangs- und Endsaldo, alle Umsätze in einer Tabelle nach Datum.</li>
+  <li>„Excel herunterladen“ klicken: Blatt „Umsätze“ mit allen Feldern und Blatt „Kontoauszüge“ mit den Salden. Oder „CSV: Umsätze“ mit Semikolon und Dezimalkomma.</li>
+</ol>
+
+<h2>Welche Spalte woher kommt</h2>
+<div class="table-scroll"><table class="ref">
+<thead><tr><th>CAMT.053-Element</th><th>Spalte im Export</th></tr></thead>
+<tbody><tr><td class="mono">Ntry/BookgDt</td><td>Buchungstag</td></tr><tr><td class="mono">Ntry/ValDt</td><td>Valuta</td></tr><tr><td class="mono">Ntry/Amt + CdtDbtInd</td><td>Betrag (negativ bei DBIT = Soll)</td></tr><tr><td class="mono">TxDtls/RltdPties/Dbtr bzw. Cdtr</td><td>Auftraggeber (Eingang) bzw. Empfänger (Ausgang)</td></tr><tr><td class="mono">TxDtls/RltdPties/DbtrAcct bzw. CdtrAcct</td><td>IBAN Gegenkonto</td></tr><tr><td class="mono">TxDtls/RmtInf/Ustrd</td><td>Verwendungszweck</td></tr><tr><td class="mono">TxDtls/RmtInf/Strd/CdtrRefInf/Ref</td><td>Strukturierte Referenz</td></tr><tr><td class="mono">TxDtls/Refs/EndToEndId</td><td>End-to-End-Referenz (EREF)</td></tr><tr><td class="mono">TxDtls/Refs/MndtId</td><td>Mandatsreferenz (MREF)</td></tr><tr><td class="mono">BkTxCd</td><td>Buchungsschlüssel</td></tr><tr><td class="mono">Ntry/AddtlNtryInf</td><td>Buchungstext</td></tr><tr><td class="mono">Stmt/Bal (OPBD, CLBD)</td><td>Anfangs- und Endsaldo</td></tr></tbody>
+</table></div>
+<p>Sammelbuchungen (eine Buchung mit mehreren Einzelumsätzen, etwa ein Lastschrifteinzug) werden in einzelne Zeilen aufgeteilt, wenn die Bank jeden Einzelumsatz mit eigenem Betrag liefert.</p>
+
+<h2>Saldenprüfung</h2>
+<p>Für jeden Auszug wird geprüft: Anfangssaldo + Umsätze = Endsaldo. Ist eine Datei unvollständig, wird der Auszug mit ⚠ markiert, statt stillschweigend falsche Summen zu liefern.</p>
+
+<h2>Kein Upload</h2>
+<p>Kontoauszüge sind vertraulich. Die Dateien werden ausschließlich in Ihrem Browser gelesen und nicht an einen Server geschickt.</p>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <h2>Fragen</h2>
+  <details><summary>Welche CAMT-Versionen werden unterstützt?</summary><p>CAMT.053, CAMT.052 und CAMT.054 in allen Versionen von .001.01 bis .001.13.</p></details>
+  <details><summary>Kann ich mehrere Konten zusammenführen?</summary><p>Ja. Dateien verschiedener Konten und Banken einfach zusammen ablegen; jede Zeile enthält ihr Konto.</p></details>
+  <details><summary>Warum sind manche Beträge negativ?</summary><p>Lastschriften und Überweisungen vom Konto (Soll, DBIT) werden negativ exportiert, damit die Summe einer Spalte die Kontobewegung ergibt.</p></details>
+  <details><summary>Geht das auch mit MT940?</summary><p>Ja, siehe die Anleitung zu MT940- bzw. STA-Dateien.</p></details>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <h2>Anleitungen</h2>
+  <ul class="guides"><li><a href="/statementsheet/de/camt053-in-excel/" hreflang="de">CAMT.053 in Excel umwandeln</a></li><li><a href="/statementsheet/de/mt940-sta-datei-oeffnen/" hreflang="de">MT940- bzw. STA-Datei öffnen</a></li><li><a href="/statementsheet/de/camt054-sammelbuchung-aufloesen/" hreflang="de">CAMT.054: Sammelbuchung auflösen</a></li><li><a href="/statementsheet/camt053-to-excel/" hreflang="en">camt.053 to Excel / CSV</a> <span class="muted small">(English)</span></li><li><a href="/statementsheet/mt940-to-excel/" hreflang="en">MT940 to Excel / CSV</a> <span class="muted small">(English)</span></li><li><a href="/statementsheet/nl/camt053-naar-excel/" hreflang="nl">camt.053 naar Excel</a> <span class="muted small">(Nederlands)</span></li><li><a href="/statementsheet/fr/releve-camt053-excel/" hreflang="fr">Relevé camt.053 en Excel</a> <span class="muted small">(Français)</span></li></ul>
+</div></section>
+</main>
+<footer class="site"><div class="wrap">
+  <span>Entwickelt in Kroatien von Tomislav Hofman · <a href="https://hofman.tech/">hofman.tech</a> · <a href="https://hofman.tech/invoicesheet/">InvoiceSheet</a></span>
+  <span><a href="/statementsheet/privacy.html">Datenschutz</a> · <a href="/statementsheet/terms.html">AGB &amp; Erstattung</a> · <a href="mailto:contact@hofman.tech">Kontakt / Impressum</a></span>
+</div></footer>
+
+<dialog id="ss-paywall" aria-labelledby="ss-pw-title">
+  <div class="dialog-body">
+    <h2 id="ss-pw-title" style="margin-top:0"><span id="ss-paywall-count"></span> Dateien mit Pro exportieren</h2>
+    <p>Die kostenlose Version exportiert bis zu 3 Auszugsdateien auf einmal. Pro hebt die Grenze auf: einmalig 19 €, kein Abo, 14 Tage Geld-zurück.</p>
+    <p><a id="ss-buy" class="btn primary" href="#" target="_blank" rel="noopener">Pro kaufen, 19 €</a></p>
+    <p class="small">Schon gekauft? Lizenzschlüssel einfügen:</p>
+    <form id="ss-key-form"><input id="ss-key" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX-…" aria-label="Licence key"><button class="btn" type="submit">Aktivieren</button></form>
+    <p id="ss-key-msg" class="small" aria-live="polite"></p>
+    <p style="text-align:right;margin-bottom:0"><button class="btn" type="button" data-close>Schließen</button></p>
+  </div>
+</dialog>
+
+<script>window.SS_CONFIG={"polarOrgId":"","checkoutUrl":"","freeLimit":3};window.SS_I18N={"parsing":"Dateien werden gelesen…","err_not_statement":"kein Kontoauszug (camt.052/053/054-XML oder MT940 erwartet)","err_read":"konnte nicht gelesen werden","n_summary":"{s} Auszüge · {n} Umsätze","warn_balance":"Anfangssaldo + Umsätze ≠ Endsaldo","launch_free":"Zum Start ist der Export für alle kostenlos.","free_limit":"Kostenlos: Export von bis zu {n} Dateien auf einmal. Pro schaltet unbegrenzte Exporte frei.","pro_active":"Pro ist in diesem Browser aktiv. Danke!","key_ok":"Lizenz aktiviert.","key_bad":"Dieser Lizenzschlüssel wurde nicht erkannt.","key_offline":"Lizenzserver nicht erreichbar. Bitte gleich noch einmal versuchen.","sheet_tx":"Umsätze","sheet_stmt":"Kontoauszüge","col_file":"Datei","col_format":"Format","col_account":"Konto","col_owner":"Kontoinhaber","col_currency":"Währung","col_stmt":"Auszugsnr.","col_from":"Von","col_to":"Bis","col_opening":"Anfangssaldo","col_closing":"Endsaldo","col_credits":"Eingänge","col_debits":"Ausgänge","col_count":"Umsätze","col_check":"Prüfung","col_booking":"Buchungstag","col_value":"Valuta","col_amount":"Betrag","col_dc":"Soll/Haben","col_counterparty":"Auftraggeber / Empfänger","col_cp_account":"IBAN Gegenkonto","col_cp_bic":"BIC Gegenkonto","col_ultimate":"Abweichender Auftraggeber/Empfänger","col_remittance":"Verwendungszweck","col_reference":"Strukturierte Referenz","col_e2e":"End-to-End-Referenz","col_mandate":"Mandatsreferenz","col_creditor":"Gläubiger-ID","col_bankcode":"Buchungsschlüssel","col_info":"Buchungstext","col_bankref":"Bankreferenz","col_status":"Status","col_description":"Beschreibung","credit":"Haben","debit":"Soll","reversal":"Storno","pending":"vorgemerkt","search_ph":"Umsätze durchsuchen…","showing":"{shown} von {n} Umsätzen angezeigt. Der Export enthält alle.","totals":"Summe"};</script>
+<script src="/statementsheet/assets/parser.js?v=5b50ec9c"></script>
+<script src="/statementsheet/assets/app.js?v=35b006e8"></script>
+</body>
+</html>
